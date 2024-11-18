@@ -1,11 +1,12 @@
-import secrets
+from secrets import randbits
 import interface
-import random
+import os
+from random import randint
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-import os
-import base64
+from base64 import b64encode, b64decode
+
 """
 Encrypts and decrypts all data within this program
 """
@@ -15,7 +16,7 @@ PADDING_CHAR = b'\x00'  # Padding character for PKCS7 padding
 
 
 def generate_key() -> int:
-    return secrets.randbits(KEY_LENGTH)
+    return randbits(KEY_LENGTH)
 
 def pad(data: bytes) -> bytes:
     """Pad the data to be a multiple of BLOCK_SIZE."""
@@ -44,8 +45,8 @@ def encrypt(string, receiver):
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
         # Return the IV concatenated with ciphertext (for use in decryption)
-        interface.send_message(base64.b64encode(iv + ciphertext).decode('utf-8'), receiver)
-        return base64.b64encode(iv + ciphertext).decode('utf-8')
+        interface.send_message(b64encode(iv + ciphertext).decode('utf-8'), receiver)
+        return b64encode(iv + ciphertext).decode('utf-8')
 
 #decryption algorithm
 def decrypt(string):
@@ -54,8 +55,10 @@ def decrypt(string):
         return string
     else:
         # Decode the base64 encoded data
-        data = base64.b64decode(string)
-
+        data = b64decode(string)
+        for el in data:
+            print(el, end=" ")
+        data_listed = list(data)
         # Extract IV and ciphertext
         iv = data[:BLOCK_SIZE]
         ciphertext = data[BLOCK_SIZE:]
@@ -68,12 +71,12 @@ def decrypt(string):
         # Decrypt and unpad the data
         decrypted_padded_data = decryptor.update(ciphertext) + decryptor.finalize()
         decrypted_data = unpad(decrypted_padded_data)
-        interface.send_message_to('debug: ' + decrypted_data.decode('utf-8') + '\n iv: ' + str(iv) + '\n ciphertext: ' + str(ciphertext), 3)
+        interface.send_message_to('debug: ' + decrypted_data.decode('utf-8') + '\n data: ' + str(data_listed), 3)
         return decrypted_data.decode('utf-8')
 
 #generating alice's secret and alice's key
 def gen_alice(p, g):
-    secret = random.randint(0, 1000)
+    secret = randint(0, 1000)
     key_a = g**secret % p
     interface.send_message_to('Alice: my key is ' + str(key_a), 2)
     interface.send_message_to('Alice: my key is ' + str(key_a), 3)
@@ -81,7 +84,7 @@ def gen_alice(p, g):
     return key_a, secret
 #generating bob's secret and bob's key
 def gen_bob(p, g):
-    secret = random.randint(0, 1000)
+    secret = randint(0, 1000)
     key_b = g**secret % p
     interface.send_message_to('Bob: my key is ' + str(key_b), 1)
     interface.send_message_to('Bob: my key is ' + str(key_b), 3)
