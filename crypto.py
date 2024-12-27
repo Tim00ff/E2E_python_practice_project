@@ -62,7 +62,6 @@ def decrypt(string):
         # Extract IV and ciphertext
         iv = data[:BLOCK_SIZE]
         ciphertext = data[BLOCK_SIZE:]
-
         # Prepare the cipher
         key = bytes.fromhex(hex(interface.shared_key)[2:].zfill(32))  # Convert shared key to bytes
         cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())

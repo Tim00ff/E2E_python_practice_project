@@ -102,6 +102,7 @@ def window_logic():
     window_bob.move(window_alice.current_location()[0] + 100, window_alice.current_location()[1] - 200)
     window_malice.move(window_alice.current_location()[0] + 600, window_alice.current_location()[1] - 200)
     window_info.move(window_alice.current_location()[0] - 350, window_alice.current_location()[1] + 200)
+    window_info.set_size((window_info.size[0], window_info.size[1] + 100))
 
     while True:  # Event Loop
         window, event, values = sg.read_all_windows()
